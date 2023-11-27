@@ -26,4 +26,5 @@ g_g1a = g_a/(g_a-1)
 R = 287 #j/kg*K
 n1_nf = (1/polyE_f)*((g_a-1)/(g_a))
 n1_nc = (1/polyE_c)*((g_a-1)/(g_a))
+lamb2 = 0.98
 
