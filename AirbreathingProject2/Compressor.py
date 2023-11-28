@@ -1,6 +1,7 @@
 import numpy as np
 from Parameters import *
 import math 
+import plotly.graph_objects as go
 
 class compressor:
     def __init__(self):
@@ -34,14 +35,12 @@ class compressor:
         Po2 = FPR*Po1
         P2 = Po2*(T2/To2)**g_g1a
         rho2 = (P2*10**5)/(R*T2)
-
-        '''
-        A2 = ma/(rho2*self.Ca)
+        A_2 = ma/(rho2*self.Ca)
         rh1 = self.rh_rt1*rt1
         rm1 = (rt1+rh1)/2
-        h1 = A2/(2*np.pi*rm1)
+        h_1 = A_2/(2*np.pi*rm1)
         #print('h1=',h1)
-        '''
+    
         
         ##Compressor##
         mc = ma / (BPR+1)
@@ -62,6 +61,7 @@ class compressor:
         h2 = A3/(2*np.pi*rm2)
         #print('h2=',h2)
         
+        #(dont need these)
         '''
         ##Fan Stage Calculatioin##
         dTo21 = To2 - To1
@@ -85,7 +85,7 @@ class compressor:
         stagesc = int(math.ceil(dTo32/self.Tos_stage1))
 
         ##Stage by stage design##
-        ##Fan Stage##
+        ##Fan Stage## (dont need)
         '''
         U1 = 2*np.pi*rm1*N1
         dCw = (cpa*Tos_f)/(self.lamb1*U1)
@@ -109,6 +109,7 @@ class compressor:
         Cw1 = 0
         Cw2 = dCw + Cw1
         b2 = np.arctan((U2-Cw2)/self.Ca)
+        a1 = np.arctan(Cw1/self.Ca)
         a2 = np.arctan(Cw2/self.Ca)
         deHaller_rotor2 = np.cos(b1)/np.cos(b2)
         Po3_Po2 = (1+((polyE_c*self.Tos_stage2)/To2))**g_g1a
@@ -137,16 +138,24 @@ class compressor:
         ##Stages 3-9 (Compressor)##
         DOR = np.array([0.65,0.6,0.5,0.5,0.5,0.5,0.5,0.5])
         lamb = np.array([0.95,0.94,0.92,0.9,0.89,0.88,0.87,0.86])
-        B1 = np.zeros(8)
-        B2 = np.zeros(8)
-        A1 = np.zeros(8)
-        A2 = np.zeros(8)
+        B1 = np.zeros(stagesc)
+        B2 = np.zeros(stagesc)
+        A1 = np.zeros(stagesc)
+        A2 = np.zeros(stagesc)
         De_Haller_stator = np.zeros(8)
         De_Haller_rotor = np.zeros(8)
         TO3 = np.zeros(9)
         PO3 = np.zeros(9)
+        AA = np.zeros(stagesc)
+        PR = np.zeros(stagesc)
+        B1[0] = b1
+        B2[0] = b2
+        A1[0] = a1
+        A2[0] = a2
         TO3[0] = To3_2
         PO3[0] = Po3_2
+        AA[0] = A3
+        PR[0] = Po3_Po2
 
         #For Root and tip values
         H1 = np.zeros(stagesc)
@@ -192,6 +201,7 @@ class compressor:
 
 
         for i in range(stagesc-1):
+            #Mean radius angles#
             b2 = np.arctan((-1/2)*(((self.Tos_stage2*cpa)/(lamb[i]*U2*self.Ca))-((2*DOR[i]*U2)/self.Ca)))
             b1 = np.arctan((DOR[i]*2*U2)/self.Ca-np.tan(b2))
             
@@ -201,6 +211,7 @@ class compressor:
             cw1 = self.Ca*np.tan(a1)
             cw2 = self.Ca*np.tan(a2)
 
+            #de_Haller Values
             de_Haller_stator = np.cos(a2)/np.cos(a1)
             de_Haller_rotor = np.cos(b1)/np.cos(b2)
 
@@ -239,11 +250,12 @@ class compressor:
             dor_r = 1 - (cw2_r/(2*ur))
 
             #Filling in arrays
-            B1[i] = b1 ; B2[i] = b2 ; A1[i] = a1 ; A2[i] = a2
+            B1[i+1] = b1 ; B2[i+1] = b2 ; A1[i+1] = a1 ; A2[i+1] = a2
             De_Haller_stator[i] = de_Haller_stator
             De_Haller_rotor[i] = de_Haller_rotor
-            TO3[i+1] = to3 ; PO3[i+1] = po3
+            TO3[i+1] = to3 ; PO3[i+1] = po3; PR[i+1] = Po3_Po1
             H1[i+1] = h1
+            AA[i+1] = area
             RT[i+1] = rt
             RR[i+1] = rr
             UT[i+1] = ut
@@ -263,9 +275,78 @@ class compressor:
             B2_t[i+1] = b2_t
             DOR_r[i+1] = dor_r
             DOR_t[i+1] = dor_t
-        print('Calcs Completed')
+        
+        data1 = np.array([['N (rev/s)','Annulus Area (m^2)','Annulus Height (m)', 'Number of Compressor Stages', \
+                           'Stage 1 Annulus Area (m^2)', 'Stage 1 Annulus Height (m)', 'Stage 2 Annulus Area (m^2)', 'Stage 2 Annulus Height (m)',\
+                           'Stage 3 Annulus Area (m^2)', 'Stage 3 Annulus Height (m)','Stage 4 Annulus Area (m^2)', 'Stage 4 Annulus Height (m)',\
+                           'Stage 5 Annulus Area (m^2)', 'Stage 5 Annulus Height (m)','Stage 6 Annulus Area (m^2)', 'Stage 6 Annulus Height (m)',\
+                           'Stage 7 Annulus Area (m^2)', 'Stage 7 Annulus Height (m)','Stage 8 Annulus Area (m^2)', 'Stage 8 Annulus Height (m)','Stage 9 Annulus Area (m^2)', 'Stage 9 Annulus Height (m)',\
+                          'Stage 1 Pressure Ratio','Stage 1 Alpha 1 (deg)','Stage 1 Alpha 2 (deg)','Stage 1 Beta 1 (deg)','Stage 1 Beta 2 (deg)', \
+                            'Stage 2 Pressure Ratio','Stage 2 Alpha 1 (deg)','Stage 2 Alpha 2 (deg)','Stage 2 Beta 1 (deg)','Stage 2 Beta 2 (deg)', \
+                                'Stage 3 Pressure Ratio','Stage 3 Alpha 1 (deg)','Stage 3 Alpha 2 (deg)','Stage 3 Beta 1 (deg)','Stage 3 Beta 2 (deg)', \
+                                    'Stage 4 Pressure Ratio','Stage 4 Alpha 1 (deg)','Stage 4 Alpha 2 (deg)','Stage 4 Beta 1 (deg)','Stage 4 Beta 2 (deg)',\
+                                        'Stage 5 Pressure Ratio','Stage 5 Alpha 1 (deg)','Stage 5 Alpha 2 (deg)','Stage 5 Beta 1 (deg)','Stage 5 Beta 2 (deg)',\
+                                            'Stage 6 Pressure Ratio','Stage 6 Alpha 1 (deg)','Stage 6 Alpha 2 (deg)','Stage 6 Beta 1 (deg)','Stage 6 Beta 2 (deg)',\
+                                                'Stage 7 Pressure Ratio','Stage 7 Alpha 1 (deg)','Stage 7 Alpha 2 (deg)','Stage 7 Beta 1 (deg)','Stage 7 Beta 2 (deg)',\
+                                                        'Stage 8 Pressure Ratio','Stage 8 Alpha 1 (deg)','Stage 8 Alpha 2 (deg)','Stage 8 Beta 1 (deg)','Stage 8 Beta 2 (deg)',\
+                                                            'Stage 9 Pressure Ratio','Stage 9 Alpha 1 (deg)','Stage 9 Alpha 2 (deg)','Stage 9 Beta 1 (deg)','Stage 9 Beta 2 (deg)'],
+                         [N2, A_2, h_1, stagesc, AA[0], H1[0],AA[1], H1[1],AA[2], H1[2],AA[3], H1[3],AA[4], H1[4],AA[5], H1[5],AA[6], H1[6],AA[7], H1[7],AA[8], H1[8],\
+                          PR[0], A1[0], A2[0], B1[0], B2[0], PR[1], A1[1], A2[1], B1[1], B2[1], PR[2], A1[2], A2[2], B1[2], B2[2],PR[3], A1[3], A2[3], B1[3], B2[3],\
+                             PR[4], A1[4], A2[4], B1[4], B2[4],PR[5], A1[5], A2[5], B1[5], B2[5],PR[6], A1[6], A2[6], B1[6], B2[6],PR[7], A1[7], A2[7], B1[7], B2[7],PR[8], A1[8], A2[8], B1[8], B2[8]]])
 
+        fig = go.Figure(data=[go.Table(
+            header=dict(values=['Variable', 'Value'],
+                        line_color='darkslategray',
+                        fill_color='lightskyblue',
+                        align='left'),
+            cells=dict(values=data1, 
+                    line_color='darkslategray',
+                    fill_color='lightcyan',
+                    align='left'))])
+        fig.update_layout(title='Compressor Annulus and Mean Radius Calculations')
+        fig.update_layout(width=800, height=1000)
+        fig.show()
 
+        data2 = np.array([['Stage 1 U tip (m/s)','Stage 1 U root (m/s)','Stage 1 Cw1 tip (m/s)','Stage 1 Cw1 root (m/s)','Stage 1 Cw2 tip (m/s)','Stage 1 Cw2 root (m/s)',\
+                           "Stage 1 Alpha 1 tip (deg)",'Stage 1 Alpha 1 root (deg)','Stage 1 Alpha 2 tip (deg)','Stage 1 Alpha 2 root','Stage 1 Beta 1 tip (deg)','Stage 1 Beta 1 root (deg)', 'Stage 1 Beta 2 tip (deg)','Stage 1 Beta 2 tip (deg)',\
+                            'Stage 2 U tip (m/s)','Stage 2 U root (m/s)','Stage 2 Cw1 tip (m/s)','Stage 2 Cw1 root (m/s)','Stage 2 Cw2 tip (m/s)','Stage 2 Cw2 root (m/s)',\
+                           "Stage 2 Alpha 1 tip (deg)",'Stage 2 Alpha 1 root (deg)','Stage 2 Alpha 2 tip (deg)','Stage 2 Alpha 2 root','Stage 2 Beta 1 tip (deg)','Stage 2 Beta 1 root (deg)', 'Stage 2 Beta 2 tip (deg)','Stage 2 Beta 2 tip (deg)',\
+                            'Stage 3 U tip (m/s)','Stage 3 U root (m/s)','Stage 3 Cw1 tip (m/s)','Stage 3 Cw1 root (m/s)','Stage 3 Cw2 tip (m/s)','Stage 3 Cw2 root (m/s)',\
+                           "Stage 3 Alpha 1 tip (deg)",'Stage 3 Alpha 1 root (deg)','Stage 3 Alpha 2 tip (deg)','Stage 3 Alpha 2 root','Stage 3 Beta 1 tip (deg)','Stage 3 Beta 1 root (deg)', 'Stage 3 Beta 2 tip (deg)','Stage 3 Beta 2 tip (deg)',\
+                            'Stage 4 U tip (m/s)','Stage 4 U root (m/s)','Stage 4 Cw1 tip (m/s)','Stage 4 Cw1 root (m/s)','Stage 4 Cw2 tip (m/s)','Stage 4 Cw2 root (m/s)',\
+                           "Stage 4 Alpha 1 tip (deg)",'Stage 4 Alpha 1 root (deg)','Stage 4 Alpha 2 tip (deg)','Stage 4 Alpha 2 root','Stage 4 Beta 1 tip (deg)','Stage 4 Beta 1 root (deg)', 'Stage 4 Beta 2 tip (deg)','Stage 4 Beta 2 tip (deg)',\
+                            'Stage 5 U tip (m/s)','Stage 5 U root (m/s)','Stage 5 Cw1 tip (m/s)','Stage 5 Cw1 root (m/s)','Stage 5 Cw2 tip (m/s)','Stage 5 Cw2 root (m/s)',\
+                           "Stage 5 Alpha 1 tip (deg)",'Stage 5 Alpha 1 root (deg)','Stage 5 Alpha 2 tip (deg)','Stage 5 Alpha 2 root','Stage 5 Beta 1 tip (deg)','Stage 5 Beta 1 root (deg)', 'Stage 5 Beta 2 tip (deg)','Stage 5 Beta 2 tip (deg)',\
+                            'Stage 6 U tip (m/s)','Stage 6 U root (m/s)','Stage 6 Cw1 tip (m/s)','Stage 6 Cw1 root (m/s)','Stage 6 Cw2 tip (m/s)','Stage 6 Cw2 root (m/s)',\
+                           "Stage 6 Alpha 1 tip (deg)",'Stage 6 Alpha 1 root (deg)','Stage 6 Alpha 2 tip (deg)','Stage 6 Alpha 2 root','Stage 6 Beta 1 tip (deg)','Stage 6 Beta 1 root (deg)', 'Stage 6 Beta 2 tip (deg)','Stage 6 Beta 2 tip (deg)',\
+                            'Stage 7 U tip (m/s)','Stage 7 U root (m/s)','Stage 7 Cw1 tip (m/s)','Stage 7 Cw1 root (m/s)','Stage 7 Cw2 tip (m/s)','Stage 7 Cw2 root (m/s)',\
+                           "Stage 7 Alpha 1 tip (deg)",'Stage 7 Alpha 1 root (deg)','Stage 7 Alpha 2 tip (deg)','Stage 7 Alpha 2 root','Stage 7 Beta 1 tip (deg)','Stage 7 Beta 1 root (deg)', 'Stage 7 Beta 2 tip (deg)','Stage 7 Beta 2 tip (deg)',\
+                            'Stage 8 U tip (m/s)','Stage 8 U root (m/s)','Stage 8 Cw1 tip (m/s)','Stage 8 Cw1 root (m/s)','Stage 8 Cw2 tip (m/s)','Stage 8 Cw2 root (m/s)',\
+                           "Stage 8 Alpha 1 tip (deg)",'Stage 8 Alpha 1 root (deg)','Stage 8 Alpha 2 tip (deg)','Stage 8 Alpha 2 root','Stage 8 Beta 1 tip (deg)','Stage 8 Beta 1 root (deg)', 'Stage 8 Beta 2 tip (deg)','Stage 8 Beta 2 tip (deg)',\
+                            'Stage 9 U tip (m/s)','Stage 9 U root (m/s)','Stage 9 Cw1 tip (m/s)','Stage 9 Cw1 root (m/s)','Stage 9 Cw2 tip (m/s)','Stage 9 Cw2 root (m/s)',\
+                           "Stage 9 Alpha 1 tip (deg)",'Stage 9 Alpha 1 root (deg)','Stage 9 Alpha 2 tip (deg)','Stage 9 Alpha 2 root','Stage 9 Beta 1 tip (deg)','Stage 9 Beta 1 root (deg)', 'Stage 9 Beta 2 tip (deg)','Stage 9 Beta 2 tip (deg)'],
+                          [UT[0], UR[0], CW1_t[0], CW1_r[0], CW2_t[0], CW2_r[0], A1_t[0], A1_r[0], A2_t[0], A2_r[0], B1_t[0], B1_r[0], B2_t[0], B2_r[0],\
+                           UT[1], UR[1], CW1_t[1], CW1_r[1], CW2_t[1], CW2_r[1], A1_t[1], A1_r[1], A2_t[1], A2_r[1], B1_t[1], B1_r[1], B2_t[1], B2_r[1],\
+                           UT[2], UR[2], CW1_t[2], CW1_r[2], CW2_t[2], CW2_r[2], A1_t[2], A1_r[2], A2_t[2], A2_r[2], B1_t[2], B1_r[2], B2_t[2], B2_r[2],\
+                           UT[3], UR[3], CW1_t[3], CW1_r[3], CW2_t[3], CW2_r[3], A1_t[3], A1_r[3], A2_t[3], A2_r[3], B1_t[3], B1_r[3], B2_t[3], B2_r[3],\
+                           UT[4], UR[4], CW1_t[4], CW1_r[4], CW2_t[4], CW2_r[4], A1_t[4], A1_r[4], A2_t[4], A2_r[4], B1_t[4], B1_r[4], B2_t[4], B2_r[4],\
+                           UT[5], UR[5], CW1_t[5], CW1_r[5], CW2_t[5], CW2_r[5], A1_t[5], A1_r[5], A2_t[5], A2_r[5], B1_t[5], B1_r[5], B2_t[5], B2_r[5],\
+                           UT[6], UR[6], CW1_t[6], CW1_r[6], CW2_t[6], CW2_r[6], A1_t[6], A1_r[6], A2_t[6], A2_r[6], B1_t[6], B1_r[6], B2_t[6], B2_r[6],\
+                           UT[7], UR[7], CW1_t[7], CW1_r[7], CW2_t[7], CW2_r[7], A1_t[7], A1_r[7], A2_t[7], A2_r[7], B1_t[7], B1_r[7], B2_t[7], B2_r[7],\
+                           UT[8], UR[8], CW1_t[8], CW1_r[8], CW2_t[8], CW2_r[8], A1_t[8], A1_r[8], A2_t[8], A2_r[8], B1_t[8], B1_r[8], B2_t[8], B2_r[8]]])
+        
+        fig = go.Figure(data=[go.Table(
+            header=dict(values=['Variable', 'Value'],
+                        line_color='darkslategray',
+                        fill_color='lightskyblue',
+                        align='left'),
+            cells=dict(values=data2, 
+                    line_color='darkslategray',
+                    fill_color='lightcyan',
+                    align='left'))])
+        fig.update_layout(title='Compressor Tip and Root Calculations')
+        fig.update_layout(width=800, height=1000)
+        fig.show()
 
 Compressor = compressor()
 Compressor.comp()
