@@ -123,14 +123,14 @@ class compressor:
         Cw_1_r_2 = Cw1 * (rm2 / rr_2)
         Cw_2_t_2 = Cw2 * (rm2 / rt_2)
         Cw_2_r_2 = Cw2 * (rm2 / rr_2)
-        alpha_1_t_2 = np.arctan(Cw1 / self.Ca)
-        alpha_1_r_2 = np.arctan(Cw1 / self.Ca)
-        alpha_2_t_2 = np.arctan(Cw2 / self.Ca)
-        alpha_2_r_2 = np.arctan(Cw2 / self.Ca)
-        Beta_1_t_2 = (Ut_2 - Cw1) / self.Ca
-        Beta_1_r_2 = (Ur_2 - Cw1) / self.Ca
-        Beta_2_t_2 = (Ut_2 - Cw2) / self.Ca
-        Beta_2_r_2 = (Ur_2 - Cw2) / self.Ca
+        alpha_1_t_2 = np.arctan(Cw_1_t_2 / self.Ca)
+        alpha_1_r_2 = np.arctan(Cw_1_r_2 / self.Ca)
+        alpha_2_t_2 = np.arctan(Cw_2_t_2 / self.Ca)
+        alpha_2_r_2 = np.arctan(Cw_2_r_2 / self.Ca)
+        Beta_1_t_2 = (Ut_2 - Cw_1_t_2) / self.Ca
+        Beta_1_r_2 = (Ur_2 - Cw_1_r_2) / self.Ca
+        Beta_2_t_2 = (Ut_2 - Cw_2_t_2) / self.Ca
+        Beta_2_r_2 = (Ur_2 - Cw_2_r_2) / self.Ca
         DOR_t_2 = 1 - (Cw2 / (2 * Ut_2))
         DOR_r_2 = 1 - (Cw2 / (2 * Ur_2))
         DOR2_mean = 1 - (Cw2+Cw1)/(2*U2)
@@ -221,7 +221,7 @@ class compressor:
 
             #For root and tip calculations
             cn = self.Ca/np.cos(a1)
-            t1 = to3 - cn**2 / (2*cpa*10**3)
+            t1 = to3 - cn**2 / (2*cpa)
             p1 = po3 * (t1/to3)**g_g1a
             rho1 = (p1*10**5)/(R*t1)
 
@@ -242,10 +242,10 @@ class compressor:
             a1_r = np.arctan(cw1_r/self.Ca)
             a2_t = np.arctan(cw2_t/self.Ca)
             a2_r = np.arctan(cw2_r/self.Ca)
-            b1_t = (ut - cw1_t)/self.Ca
-            b1_r = (ur - cw1_r)/self.Ca
-            b2_t = (ut - cw2_t)/self.Ca
-            b2_r = (ur - cw2_r)/self.Ca
+            b1_t = np.arctan(ut - cw1_t)/self.Ca
+            b1_r = np.arctan(ur - cw1_r)/self.Ca
+            b2_t = np.arctan(ut - cw2_t)/self.Ca
+            b2_r = np.arctan(ur - cw2_r)/self.Ca
             dor_t = 1 - (cw2_t/(2*ut))
             dor_r = 1 - (cw2_r/(2*ur))
 
@@ -308,23 +308,23 @@ class compressor:
         fig.show()
 
         data2 = np.array([['Stage 1 U tip (m/s)','Stage 1 U root (m/s)','Stage 1 Cw1 tip (m/s)','Stage 1 Cw1 root (m/s)','Stage 1 Cw2 tip (m/s)','Stage 1 Cw2 root (m/s)',\
-                           "Stage 1 Alpha 1 tip (deg)",'Stage 1 Alpha 1 root (deg)','Stage 1 Alpha 2 tip (deg)','Stage 1 Alpha 2 root','Stage 1 Beta 1 tip (deg)','Stage 1 Beta 1 root (deg)', 'Stage 1 Beta 2 tip (deg)','Stage 1 Beta 2 tip (deg)',\
+                           "Stage 1 Alpha 1 tip (deg)",'Stage 1 Alpha 1 root (deg)','Stage 1 Alpha 2 tip (deg)','Stage 1 Alpha 2 root','Stage 1 Beta 1 tip (deg)','Stage 1 Beta 1 root (deg)', 'Stage 1 Beta 2 tip (deg)','Stage 1 Beta 2 root (deg)',\
                             'Stage 2 U tip (m/s)','Stage 2 U root (m/s)','Stage 2 Cw1 tip (m/s)','Stage 2 Cw1 root (m/s)','Stage 2 Cw2 tip (m/s)','Stage 2 Cw2 root (m/s)',\
-                           "Stage 2 Alpha 1 tip (deg)",'Stage 2 Alpha 1 root (deg)','Stage 2 Alpha 2 tip (deg)','Stage 2 Alpha 2 root','Stage 2 Beta 1 tip (deg)','Stage 2 Beta 1 root (deg)', 'Stage 2 Beta 2 tip (deg)','Stage 2 Beta 2 tip (deg)',\
+                           "Stage 2 Alpha 1 tip (deg)",'Stage 2 Alpha 1 root (deg)','Stage 2 Alpha 2 tip (deg)','Stage 2 Alpha 2 root','Stage 2 Beta 1 tip (deg)','Stage 2 Beta 1 root (deg)', 'Stage 2 Beta 2 tip (deg)','Stage 2 Beta 2 root (deg)',\
                             'Stage 3 U tip (m/s)','Stage 3 U root (m/s)','Stage 3 Cw1 tip (m/s)','Stage 3 Cw1 root (m/s)','Stage 3 Cw2 tip (m/s)','Stage 3 Cw2 root (m/s)',\
-                           "Stage 3 Alpha 1 tip (deg)",'Stage 3 Alpha 1 root (deg)','Stage 3 Alpha 2 tip (deg)','Stage 3 Alpha 2 root','Stage 3 Beta 1 tip (deg)','Stage 3 Beta 1 root (deg)', 'Stage 3 Beta 2 tip (deg)','Stage 3 Beta 2 tip (deg)',\
+                           "Stage 3 Alpha 1 tip (deg)",'Stage 3 Alpha 1 root (deg)','Stage 3 Alpha 2 tip (deg)','Stage 3 Alpha 2 root','Stage 3 Beta 1 tip (deg)','Stage 3 Beta 1 root (deg)', 'Stage 3 Beta 2 tip (deg)','Stage 3 Beta 2 root (deg)',\
                             'Stage 4 U tip (m/s)','Stage 4 U root (m/s)','Stage 4 Cw1 tip (m/s)','Stage 4 Cw1 root (m/s)','Stage 4 Cw2 tip (m/s)','Stage 4 Cw2 root (m/s)',\
-                           "Stage 4 Alpha 1 tip (deg)",'Stage 4 Alpha 1 root (deg)','Stage 4 Alpha 2 tip (deg)','Stage 4 Alpha 2 root','Stage 4 Beta 1 tip (deg)','Stage 4 Beta 1 root (deg)', 'Stage 4 Beta 2 tip (deg)','Stage 4 Beta 2 tip (deg)',\
+                           "Stage 4 Alpha 1 tip (deg)",'Stage 4 Alpha 1 root (deg)','Stage 4 Alpha 2 tip (deg)','Stage 4 Alpha 2 root','Stage 4 Beta 1 tip (deg)','Stage 4 Beta 1 root (deg)', 'Stage 4 Beta 2 tip (deg)','Stage 4 Beta 2 root (deg)',\
                             'Stage 5 U tip (m/s)','Stage 5 U root (m/s)','Stage 5 Cw1 tip (m/s)','Stage 5 Cw1 root (m/s)','Stage 5 Cw2 tip (m/s)','Stage 5 Cw2 root (m/s)',\
-                           "Stage 5 Alpha 1 tip (deg)",'Stage 5 Alpha 1 root (deg)','Stage 5 Alpha 2 tip (deg)','Stage 5 Alpha 2 root','Stage 5 Beta 1 tip (deg)','Stage 5 Beta 1 root (deg)', 'Stage 5 Beta 2 tip (deg)','Stage 5 Beta 2 tip (deg)',\
+                           "Stage 5 Alpha 1 tip (deg)",'Stage 5 Alpha 1 root (deg)','Stage 5 Alpha 2 tip (deg)','Stage 5 Alpha 2 root','Stage 5 Beta 1 tip (deg)','Stage 5 Beta 1 root (deg)', 'Stage 5 Beta 2 tip (deg)','Stage 5 Beta 2 root (deg)',\
                             'Stage 6 U tip (m/s)','Stage 6 U root (m/s)','Stage 6 Cw1 tip (m/s)','Stage 6 Cw1 root (m/s)','Stage 6 Cw2 tip (m/s)','Stage 6 Cw2 root (m/s)',\
-                           "Stage 6 Alpha 1 tip (deg)",'Stage 6 Alpha 1 root (deg)','Stage 6 Alpha 2 tip (deg)','Stage 6 Alpha 2 root','Stage 6 Beta 1 tip (deg)','Stage 6 Beta 1 root (deg)', 'Stage 6 Beta 2 tip (deg)','Stage 6 Beta 2 tip (deg)',\
+                           "Stage 6 Alpha 1 tip (deg)",'Stage 6 Alpha 1 root (deg)','Stage 6 Alpha 2 tip (deg)','Stage 6 Alpha 2 root','Stage 6 Beta 1 tip (deg)','Stage 6 Beta 1 root (deg)', 'Stage 6 Beta 2 tip (deg)','Stage 6 Beta 2 root (deg)',\
                             'Stage 7 U tip (m/s)','Stage 7 U root (m/s)','Stage 7 Cw1 tip (m/s)','Stage 7 Cw1 root (m/s)','Stage 7 Cw2 tip (m/s)','Stage 7 Cw2 root (m/s)',\
-                           "Stage 7 Alpha 1 tip (deg)",'Stage 7 Alpha 1 root (deg)','Stage 7 Alpha 2 tip (deg)','Stage 7 Alpha 2 root','Stage 7 Beta 1 tip (deg)','Stage 7 Beta 1 root (deg)', 'Stage 7 Beta 2 tip (deg)','Stage 7 Beta 2 tip (deg)',\
+                           "Stage 7 Alpha 1 tip (deg)",'Stage 7 Alpha 1 root (deg)','Stage 7 Alpha 2 tip (deg)','Stage 7 Alpha 2 root','Stage 7 Beta 1 tip (deg)','Stage 7 Beta 1 root (deg)', 'Stage 7 Beta 2 tip (deg)','Stage 7 Beta 2 root (deg)',\
                             'Stage 8 U tip (m/s)','Stage 8 U root (m/s)','Stage 8 Cw1 tip (m/s)','Stage 8 Cw1 root (m/s)','Stage 8 Cw2 tip (m/s)','Stage 8 Cw2 root (m/s)',\
-                           "Stage 8 Alpha 1 tip (deg)",'Stage 8 Alpha 1 root (deg)','Stage 8 Alpha 2 tip (deg)','Stage 8 Alpha 2 root','Stage 8 Beta 1 tip (deg)','Stage 8 Beta 1 root (deg)', 'Stage 8 Beta 2 tip (deg)','Stage 8 Beta 2 tip (deg)',\
+                           "Stage 8 Alpha 1 tip (deg)",'Stage 8 Alpha 1 root (deg)','Stage 8 Alpha 2 tip (deg)','Stage 8 Alpha 2 root','Stage 8 Beta 1 tip (deg)','Stage 8 Beta 1 root (deg)', 'Stage 8 Beta 2 tip (deg)','Stage 8 Beta 2 root (deg)',\
                             'Stage 9 U tip (m/s)','Stage 9 U root (m/s)','Stage 9 Cw1 tip (m/s)','Stage 9 Cw1 root (m/s)','Stage 9 Cw2 tip (m/s)','Stage 9 Cw2 root (m/s)',\
-                           "Stage 9 Alpha 1 tip (deg)",'Stage 9 Alpha 1 root (deg)','Stage 9 Alpha 2 tip (deg)','Stage 9 Alpha 2 root','Stage 9 Beta 1 tip (deg)','Stage 9 Beta 1 root (deg)', 'Stage 9 Beta 2 tip (deg)','Stage 9 Beta 2 tip (deg)'],
+                           "Stage 9 Alpha 1 tip (deg)",'Stage 9 Alpha 1 root (deg)','Stage 9 Alpha 2 tip (deg)','Stage 9 Alpha 2 root','Stage 9 Beta 1 tip (deg)','Stage 9 Beta 1 root (deg)', 'Stage 9 Beta 2 tip (deg)','Stage 9 Beta 2 root (deg)'],
                           [UT[0], UR[0], CW1_t[0], CW1_r[0], CW2_t[0], CW2_r[0], A1_t[0], A1_r[0], A2_t[0], A2_r[0], B1_t[0], B1_r[0], B2_t[0], B2_r[0],\
                            UT[1], UR[1], CW1_t[1], CW1_r[1], CW2_t[1], CW2_r[1], A1_t[1], A1_r[1], A2_t[1], A2_r[1], B1_t[1], B1_r[1], B2_t[1], B2_r[1],\
                            UT[2], UR[2], CW1_t[2], CW1_r[2], CW2_t[2], CW2_r[2], A1_t[2], A1_r[2], A2_t[2], A2_r[2], B1_t[2], B1_r[2], B2_t[2], B2_r[2],\
